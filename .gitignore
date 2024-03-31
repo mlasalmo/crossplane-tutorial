@@ -1,4 +1,5 @@
 /.env
+/.task
 /gcp-creds.json
 /google-creds.json
 /aws-creds.conf

@@ -1,0 +1,102 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  default:
+    cmds:
+    - task --list
+    silent: true
+
+  destroy:*:
+    cmds:
+    - |
+      case "{{.CHAPTER}}" in
+        "00")
+          echo "Chapter 00: Introduction"
+          destroy/00-intro.sh ;;
+        "01")
+          echo "Chapter 01: Managed resources"
+          destroy/01-managed-resources.sh ;;
+        "02")
+          echo "Chapter 02: Compositions"
+          destroy/02-compositions.sh ;;
+        "03")
+          echo "Chapter 03: Configurations"
+          destroy/03-configurations.sh ;;
+        "04")
+          echo "Chapter 04: Functions"
+          destroy/04-functions.sh ;;
+        *)
+          echo "Chapter not found"
+          exit 1 ;;
+      esac
+    deps: [requirements]
+    desc: Destroy the resources
+    silent: true
+    sources:
+    - destroy/*
+    vars:
+      CHAPTER: "{{index .MATCH 0}}"
+
+  requirements:
+    cmds:
+    - |
+      if [ -z $name ]; then
+        nix-shell --run $SHELL
+      fi
+    desc: Load nix-shell environment
+    silent: true
+
+  setup:*:
+    cmds:
+    - |
+      case "{{.CHAPTER}}" in
+        "00")
+          echo "Chapter 00: Introduction"
+          setup/00-intro.sh ;;
+        "01")
+          echo "Chapter 01: Setup for the Managed Resources chapter."
+          setup/01-managed-resources.sh
+          source .env
+          helm status --namespace crossplane-system crossplane >/dev/null 2>&1 || \
+          helm upgrade --install crossplane crossplane \
+            --create-namespace \
+            --namespace crossplane-system \
+            --repo https://charts.crossplane.io/stable \
+            --wait
+          kubectl apply --filename providers/$HYPERSCALER-vm.yaml
+          kubectl get pkgrev
+          kubectl get crd
+          kubectl get secret aws-creds --namespace crossplane-system || \
+          kubectl --namespace crossplane-system \
+            create secret generic aws-creds \
+            --from-file creds=$HYPERSCALER-creds.conf
+          kubectl apply --filename providers/$HYPERSCALER-config.yaml
+          kubectl apply --filename examples/$HYPERSCALER-vm.yaml
+          kubectl get managed ;;
+        "02")
+          echo "Chapter 02: Compositions"
+          setup/02-compositions.sh ;;
+        "03")
+          echo "Chapter 03: Configurations"
+          setup/03-configurations.sh ;;
+        "04")
+          echo "Chapter 04: Functions"
+          setup/04-functions.sh ;;
+        *)
+          echo "Chapter not found"
+          exit 1 ;;
+      esac
+    deps: [requirements]
+    desc: Setup stage to create resources needed for the chapter
+    generates:
+    - .env
+    - aws-creds.conf
+    silent: true
+    sources:
+    - setup/*
+    vars:
+      CHAPTER: "{{index .MATCH 0}}"
