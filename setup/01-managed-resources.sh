@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 gum style \
 	--foreground 212 --border-foreground 212 --border double \
 	--margin "1 2" --padding "2 4" \
 	'Setup for the Managed Resources chapter.
-  
+
 This script assumes that you jumped straight into this chapter.
 If that is not the case (if you are continuing from the previous
 chapter), please answer with "No" when asked whether you are
@@ -110,7 +110,7 @@ elif [ "$HYPERSCALER" = "aws" ]; then
         --placeholder "AWS Access Key ID" \
         --value "$AWS_ACCESS_KEY_ID")
     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
-    
+
     AWS_SECRET_ACCESS_KEY=$(gum input \
         --placeholder "AWS Secret Access Key" \
         --value "$AWS_SECRET_ACCESS_KEY" --password)
