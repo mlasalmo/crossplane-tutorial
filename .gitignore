@@ -1,10 +1,11 @@
 /.env
 /.task
-/gcp-creds.json
-/google-creds.json
 /aws-creds.conf
-/gke_gcloud_auth_plugin_cache
-/kubeconfig.yaml
 /azure-creds.json
 /bin
+/devbox.lock
+/gcp-creds.json
+/gke_gcloud_auth_plugin_cache
+/google-creds.json
+/kubeconfig.yaml
 /kubeconfig.yaml
