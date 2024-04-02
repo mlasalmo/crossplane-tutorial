@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.3/.schema/devbox.schema.json",
+  "packages": [
+    "awscli2@2.15.32",
+    "crossplane-cli@1.15.1",
+    "gh@2.46.0",
+    "gum@0.13.0",
+    "jq@1.7.1",
+    "kind@0.22.0",
+    "kubectl@1.29.2",
+    "kubernetes-helm@3.14.3",
+    "teller@1.5.6",
+    "upbound@0.24.2",
+    "yq-go@4.43.1"
+  ],
+  "shell": {
+    "init_hook": [
+      "test -f .env && source .env",
+      "test -f ~/.p10k.zsh && source ~/.p10k.zsh",
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "destroy-00": ["task destroy:00"],
+      "destroy-01": ["task destroy:01"],
+      "setup-00":   ["task setup:00"],
+      "setup-01":   ["task setup:01"]
+    }
+  }
+}
