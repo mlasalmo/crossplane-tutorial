@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 ---
+=======
+>>>>>>> 357777f (Add devcontainer & k3d configuration)
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
