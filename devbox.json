@@ -15,9 +15,7 @@
   ],
   "shell": {
     "init_hook": [
-      "test -f .env && source .env",
-      "test -f ~/.p10k.zsh && source ~/.p10k.zsh",
-      "echo 'Welcome to devbox!' > /dev/null"
+      "test -f .env && source .env"
     ],
     "scripts": {
       "destroy-00": ["task destroy:00"],
