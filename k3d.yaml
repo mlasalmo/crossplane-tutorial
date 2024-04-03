@@ -1,0 +1,6 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: crossplane-tutorial
+image: rancher/k3s:v1.29.2-k3s1
+servers: 1
