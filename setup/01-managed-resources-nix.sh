@@ -8,7 +8,7 @@ gum style \
 	--foreground 212 --border-foreground 212 --border double \
 	--margin "1 2" --padding "2 4" \
 	'Setup for the Managed Resources chapter.
-  
+
 This script assumes that you jumped straight into this chapter.
 If that is not the case (if you are continuing from the previous
 chapter), please answer with "No" when asked whether you are
@@ -41,46 +41,39 @@ HYPERSCALER=$(gum choose "google" "aws" "azure")
 echo "export HYPERSCALER=$HYPERSCALER" >> .env
 
 if [[ "$HYPERSCALER" == "google" ]]; then
-    
-    gcloud auth login
-
-    PROJECT_ID=dot-$(date +%Y%m%d%H%M%S)
-
-    echo "export PROJECT_ID=$PROJECT_ID" >> .env
-
-    gcloud projects create ${PROJECT_ID}
-
-    echo "
+  gcloud auth login
+  PROJECT_ID=dot-$(date +%Y%m%d%H%M%S)
+  echo "export PROJECT_ID=$PROJECT_ID" >> .env
+  gcloud projects create "${PROJECT_ID}"
+  echo "
 Please open https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=$PROJECT_ID in a browser and *ENABLE* the API."
 
-    gum input --placeholder "
+  gum input --placeholder "
 Press the enter key to continue."
 
-    export SA_NAME=devops-toolkit
+  export SA_NAME=devops-toolkit
+  export SA="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
-    export SA="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+  gcloud iam service-accounts create $SA_NAME \
+    --project "$PROJECT_ID"
 
-    gcloud iam service-accounts create $SA_NAME \
-        --project $PROJECT_ID
+  export ROLE=roles/admin
 
-    export ROLE=roles/admin
+  gcloud projects add-iam-policy-binding \
+    --role $ROLE "$PROJECT_ID" --member "serviceAccount:$SA"
 
-    gcloud projects add-iam-policy-binding \
-        --role $ROLE $PROJECT_ID --member serviceAccount:$SA
+  gcloud iam service-accounts keys create gcp-creds.json \
+    --project "$PROJECT_ID" --iam-account "$SA"
 
-    gcloud iam service-accounts keys create gcp-creds.json \
-        --project $PROJECT_ID --iam-account $SA
-
-    yq --inplace ".spec.projectID = \"$PROJECT_ID\"" \
-        providers/google-config.yaml
+  yq --inplace ".spec.projectID = \"$PROJECT_ID\"" \
+    providers/google-config.yaml
 
 elif [[ "$HYPERSCALER" == "aws" ]]; then
-
     AWS_ACCESS_KEY_ID=$(gum input \
         --placeholder "AWS Access Key ID" \
         --value "$AWS_ACCESS_KEY_ID")
     echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
-    
+
     AWS_SECRET_ACCESS_KEY=$(gum input \
         --placeholder "AWS Secret Access Key" \
         --value "$AWS_SECRET_ACCESS_KEY" --password)
@@ -94,17 +87,14 @@ elif [[ "$HYPERSCALER" == "aws" ]]; then
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
 " >aws-creds.conf
-
 else
+  AZURE_TENANT_ID=$(gum input --placeholder "Azure Tenant ID" --value "$AZURE_TENANT_ID")
+  az login --tenant "$AZURE_TENANT_ID"
 
-    AZURE_TENANT_ID=$(gum input --placeholder "Azure Tenant ID" --value "$AZURE_TENANT_ID")
+  SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+  export SUBSCRIPTION_ID
 
-    az login --tenant $AZURE_TENANT_ID
-
-    export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-
-    az ad sp create-for-rbac --sdk-auth --role Owner \
-        --scopes /subscriptions/$SUBSCRIPTION_ID \
-        | tee azure-creds.json
-
+  az ad sp create-for-rbac --sdk-auth --role Owner \
+    --scopes "/subscriptions/$SUBSCRIPTION_ID" \
+    | tee azure-creds.json
 fi
