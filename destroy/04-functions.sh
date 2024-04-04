@@ -14,12 +14,13 @@ Feel free to say "No" and inspect the script if you prefer setting up resources 
 
 echo "
 ## You will need following tools installed:
-|Name            |Required             |More info                                          |
-|----------------|---------------------|---------------------------------------------------|
-|Linux Shell     |Yes                  |Use WSL if you are running Windows                 |
-|Docker          |Yes                  |'https://docs.docker.com/engine/install'           |
-|kind CLI        |Yes                  |'https://kind.sigs.k8s.io/docs/user/quick-start/#installation'|
-|Google Cloud CLI|If using Google Cloud|'https://cloud.google.com/sdk/docs/install'        |
+|Name            |Required                |More info                                                     |
+|----------------|------------------------|--------------------------------------------------------------|
+|Docker          |Yes                     |'https://docs.docker.com/engine/install'                      |
+|Google Cloud CLI|If using Google Cloud   |'https://cloud.google.com/sdk/docs/install'                   |
+|Linux Shell     |Yes                     |Use WSL if you are running Windows                            |
+|k3d CLI         |If using rancher-desktop|'https://k3d.io/v5.6.0/#installation                          |
+|kind CLI        |If using docker-desktop |'https://kind.sigs.k8s.io/docs/user/quick-start/#installation'|
 
 If you are running this script from **Nix shell**, most of the requirements are already set with the exception of **Docker** and the **hyperscaler account**.
 " | gum format
@@ -33,24 +34,18 @@ Do you have those tools installed?
 ##############
 
 if [[ "$HYPERSCALER" == "google" ]]; then
-
-	gcloud projects delete $PROJECT_ID --quiet
-
+  gcloud projects delete "$PROJECT_ID" --quiet
 else
+  kubectl --namespace a-team delete \
+    --filename "examples/$HYPERSCALER-sql-v10.yaml"
+  COUNTER=$(kubectl get managed --no-headers | grep -cv database)
 
-	kubectl --namespace a-team delete \
-		--filename examples/$HYPERSCALER-sql-v10.yaml
-
-	COUNTER=$(kubectl get managed --no-headers | grep -v database \
-		| wc -l)
-
-	while [ $COUNTER -ne 0 ]; do
-		echo "$COUNTER resources still exist. Waiting for them to be deleted..."
-		sleep 30
-		COUNTER=$(kubectl get managed --no-headers \
-			| grep -v database | wc -l)
-	done
-
+  while [ "$COUNTER" -ne 0 ]; do
+    echo "$COUNTER resources still exist. Waiting for them to be deleted..."
+    sleep 10
+    COUNTER=$(kubectl get managed --no-headers \
+    | grep -cv database)
+  done
 fi
 
 #########################

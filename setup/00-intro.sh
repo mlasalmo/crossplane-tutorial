@@ -14,20 +14,21 @@ Feel free to say "No" and inspect the script if you prefer setting up resources 
 
 echo "
 ## You will need following tools installed:
-|Name            |Required             |More info                                          |
-|----------------|---------------------|---------------------------------------------------|
-|Linux Shell     |Yes                  |Use WSL if you are running Windows                 |
-|Docker          |Yes                  |'https://docs.docker.com/engine/install'           |
-|kind CLI        |Yes                  |'https://kind.sigs.k8s.io/docs/user/quick-start/#installation'|
-|kubectl CLI     |Yes                  |'https://kubernetes.io/docs/tasks/tools/#kubectl'  |
-|crossplane CLI  |Yes                  |'https://docs.crossplane.io/latest/cli'            |
-|yq CLI          |Yes                  |'https://github.com/mikefarah/yq#install'          |
-|Google Cloud account with admin permissions|If using Google Cloud|'https://cloud.google.com'|
-|Google Cloud CLI|If using Google Cloud|'https://cloud.google.com/sdk/docs/install'        |
-|AWS account with admin permissions|If using AWS|'https://aws.amazon.com'                  |
-|AWS CLI         |If using AWS         |'https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html'|
-|Azure account with admin permissions|If using Azure|'https://azure.microsoft.com'         |
-|az CLI          |If using Azure       |'https://learn.microsoft.com/cli/azure/install-azure-cli'|
+|Name                                       |Required                |More info                                                                      |
+|-------------------------------------------|------------------------|-------------------------------------------------------------------------------|
+|AWS CLI                                    |If using AWS            |'https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html'|
+|AWS account with admin permissions         |If using AWS            |'https://aws.amazon.com'                                                       |
+|Azure account with admin permissions       |If using Azure          |'https://azure.microsoft.com'                                                  |
+|Docker                                     |Yes                     |'https://docs.docker.com/engine/install'                                       |
+|Google Cloud CLI                           |If using Google Cloud   |'https://cloud.google.com/sdk/docs/install'                                    |
+|Google Cloud account with admin permissions|If using Google Cloud   |'https://cloud.google.com'                                                     |
+|Linux Shell                                |Yes                     |Use WSL if you are running Windows                                             |
+|az CLI                                     |If using Azure          |'https://learn.microsoft.com/cli/azure/install-azure-cli'                      |
+|crossplane CLI                             |Yes                     |'https://docs.crossplane.io/latest/cli'                                        |
+|k3d CLI                                    |If using rancher-desktop|'https://k3d.io/v5.6.0/#installation                                           |
+|kind CLI                                   |If using docker-desktop |'https://kind.sigs.k8s.io/docs/user/quick-start/#installation'                 |
+|kubectl CLI                                |Yes                     |'https://kubernetes.io/docs/tasks/tools/#kubectl'                              |
+|yq CLI                                     |Yes                     |'https://github.com/mikefarah/yq#install'                                      |
 
 If you are running this script from **Nix shell**, most of the requirements are already set with the exception of **Docker** and the **hyperscaler account**.
 " | gum format
@@ -42,14 +43,25 @@ rm -f .env
 # Control Plane Cluster #
 #########################
 
-kind create cluster --config kind.yaml
+echo "## Which local K8s cluster do you want to use?" | gum format
 
-kubectl apply \
+K8S_CLUSTER=$(gum choose "k3d" "kind")
+
+if [[ "$K8S_CLUSTER" == "k3d" ]]; then
+  k3d cluster create --config k3d.yaml
+else
+  kind create cluster --config kind.yaml
+  kubectl apply \
     --filename https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+fi
 
 ##############
 # Crossplane #
 ##############
+
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+
+helm repo update
 
 helm upgrade --install crossplane crossplane \
     --repo https://charts.crossplane.io/stable \
@@ -86,7 +98,7 @@ if [[ "$HYPERSCALER" == "google" ]]; then
 
     echo "export PROJECT_ID=$PROJECT_ID" >> .env
 
-    gcloud projects create ${PROJECT_ID}
+    gcloud projects create "${PROJECT_ID}"
 
     echo "## Open https://console.cloud.google.com/billing/linkedaccount?project=$PROJECT_ID and link a billing account" \
         | gum format
@@ -108,15 +120,15 @@ if [[ "$HYPERSCALER" == "google" ]]; then
     export SA="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
     gcloud iam service-accounts create $SA_NAME \
-        --project $PROJECT_ID
+        --project "$PROJECT_ID"
 
     export ROLE=roles/admin
 
     gcloud projects add-iam-policy-binding \
-        --role $ROLE $PROJECT_ID --member serviceAccount:$SA
+        --role $ROLE "$PROJECT_ID" --member "serviceAccount:$SA"
 
     gcloud iam service-accounts keys create gcp-creds.json \
-        --project $PROJECT_ID --iam-account $SA
+        --project "$PROJECT_ID" --iam-account "$SA"
 
     kubectl --namespace crossplane-system \
         create secret generic gcp-creds \
@@ -137,44 +149,37 @@ spec:
       key: creds" | kubectl apply --filename -
 
 elif [[ "$HYPERSCALER" == "aws" ]]; then
+  AWS_ACCESS_KEY_ID=$(gum input --placeholder "AWS Access Key ID" --value "$AWS_ACCESS_KEY_ID")
+  echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
 
-    AWS_ACCESS_KEY_ID=$(gum input --placeholder "AWS Access Key ID" --value "$AWS_ACCESS_KEY_ID")
-    echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+  AWS_SECRET_ACCESS_KEY=$(gum input --placeholder "AWS Secret Access Key" --value "$AWS_SECRET_ACCESS_KEY" --password)
+  echo "export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
 
-    AWS_SECRET_ACCESS_KEY=$(gum input --placeholder "AWS Secret Access Key" --value "$AWS_SECRET_ACCESS_KEY" --password)
-    echo "export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+  AWS_ACCOUNT_ID=$(gum input --placeholder "AWS Account ID" --value "$AWS_ACCOUNT_ID")
+  echo "export AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> .env
 
-    AWS_ACCOUNT_ID=$(gum input --placeholder "AWS Account ID" --value "$AWS_ACCOUNT_ID")
-    echo "export AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> .env
-
-    echo "[default]
+  echo "[default]
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
 " >aws-creds.conf
 
-    kubectl --namespace crossplane-system \
-        create secret generic aws-creds \
-        --from-file creds=./aws-creds.conf
+  kubectl --namespace crossplane-system \
+    create secret generic aws-creds \
+    --from-file creds=./aws-creds.conf
 
-    kubectl apply --filename providers/aws-config.yaml
-
+  kubectl apply --filename providers/aws-config.yaml
 else
+  AZURE_TENANT_ID=$(gum input --placeholder "Azure Tenant ID" --value "$AZURE_TENANT_ID")
+  az login --tenant "$AZURE_TENANT_ID"
 
-    AZURE_TENANT_ID=$(gum input --placeholder "Azure Tenant ID" --value "$AZURE_TENANT_ID")
+  SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+  export SUBSCRIPTION_ID
 
-    az login --tenant $AZURE_TENANT_ID
-
-    export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-
-    az ad sp create-for-rbac --sdk-auth --role Owner --scopes /subscriptions/$SUBSCRIPTION_ID | tee azure-creds.json
-
-    kubectl --namespace crossplane-system create secret generic azure-creds --from-file creds=./azure-creds.json
-
-    kubectl apply --filename providers/azure-config.yaml
-
-    DB_NAME=silly-demo-db-$(date +%Y%m%d%H%M%S)
-
-    echo "---
+  az ad sp create-for-rbac --sdk-auth --role Owner --scopes "/subscriptions/$SUBSCRIPTION_ID" | tee azure-creds.json
+  kubectl --namespace crossplane-system create secret generic azure-creds --from-file creds=./azure-creds.json
+  kubectl apply --filename providers/azure-config.yaml
+  DB_NAME=silly-demo-db-$(date +%Y%m%d%H%M%S)
+  echo "---
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
@@ -241,13 +246,13 @@ kubectl create namespace a-team
 
 REPO_URL=$(git config --get remote.origin.url)
 # workaround to avoid setting up SSH key in ArgoCD
-REPO_URL=$(echo $REPO_URL | sed 's/git@github.com:/https:\/\/github.com\//') # replace git@github.com: to https://github.com/
+REPO_URL=$(echo "$REPO_URL" | sed 's/git@github.com:/https:\/\/github.com\//') # replace git@github.com: to https://github.com/
 
 yq --inplace ".spec.source.repoURL = \"$REPO_URL\"" argocd/apps.yaml
 
 helm upgrade --install argocd argo-cd \
-    --repo https://argoproj.github.io/argo-helm \
-    --namespace argocd --create-namespace \
-    --values argocd/helm-values.yaml --wait
+  --repo https://argoproj.github.io/argo-helm \
+  --namespace argocd --create-namespace \
+  --values argocd/helm-values.yaml --wait
 
 kubectl apply --filename argocd/apps.yaml
