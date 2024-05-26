@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.3/.schema/devbox.schema.json",
+  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.7/.schema/devbox.schema.json",
   "packages": [
     "awscli2@2.15.32",
     "crossplane-cli@1.15.1",
