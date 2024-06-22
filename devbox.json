@@ -17,7 +17,7 @@
   },
   "shell": {
     "init_hook": [
-      "test -f .env && source .env"
+      "alias cat='bat --paging never --theme DarkNeon --style plain'"
     ],
     "scripts": {
       "destroy-00": ["task destroy:00"],
