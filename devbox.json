@@ -1,20 +1,19 @@
 {
-  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.14.0/.schema/devbox.schema.json",
-  "packages": {
-    "awscli2": "2.24.24",
-    "crossplane-cli": "1.15.1",
-    "gh": "2.69.0",
-    "go-task": "3.41.0",
-    "gum": "0.16.0",
-    "jq": "1.7.1",
-    "k3d": "5.8.3",
-    "kind": "0.27.0",
-    "kubectl": "1.32.3",
-    "kubernetes-helm": "3.17.2",
-    "teller": "2.0.7",
-    "upbound": "0.38.1",
-    "yq-go": "4.45.1"
-  },
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.10.5/.schema/devbox.schema.json",
+  "packages": [
+    "bat@0.24.0",
+    "kind@0.22.0",
+    "kubernetes-helm@3.14.3",
+    "kubectl@1.29.3",
+    "gum@0.13.0",
+    "awscli2@2.15.15",
+    "path:gcloud#google-cloud-sdk",
+    "teller@1.5.6",
+    "yq-go@4.43.1",
+    "crossplane-cli@1.15.1",
+    "azure-cli@2.60.0",
+    "viddy@0.4.0"
+  ],
   "shell": {
     "init_hook": [
       "alias cat='bat --paging never --theme DarkNeon --style plain'"
