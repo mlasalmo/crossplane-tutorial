@@ -556,51 +556,51 @@
         }
       }
     },
-    "kubernetes-helm@3.17.2": {
-      "last_modified": "2025-03-16T16:17:41Z",
-      "resolved": "github:NixOS/nixpkgs/8f76cf16b17c51ae0cc8e55488069593f6dab645#kubernetes-helm",
+    "teller@2.0.7": {
+      "last_modified": "2024-11-16T04:25:12Z",
+      "resolved": "github:NixOS/nixpkgs/34a626458d686f1b58139620a8b2793e9e123bba#teller",
       "source": "devbox-search",
-      "version": "3.17.2",
+      "version": "2.0.7",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/brc3q5prx53ip89csfg37g9ydwwgfd1p-kubernetes-helm-3.17.2",
+              "path": "/nix/store/362vqnhbc0x56ly10j1wxvic0xicv0lr-teller-2.0.7",
               "default": true
             }
           ],
-          "store_path": "/nix/store/brc3q5prx53ip89csfg37g9ydwwgfd1p-kubernetes-helm-3.17.2"
+          "store_path": "/nix/store/362vqnhbc0x56ly10j1wxvic0xicv0lr-teller-2.0.7"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/xrgs4la1szz3f3kf7w9g21wzp30mdfy2-kubernetes-helm-3.17.2",
+              "path": "/nix/store/wrsh6xgn25b4qq4la4xikrdpqlx04xhn-teller-2.0.7",
               "default": true
             }
           ],
-          "store_path": "/nix/store/xrgs4la1szz3f3kf7w9g21wzp30mdfy2-kubernetes-helm-3.17.2"
+          "store_path": "/nix/store/wrsh6xgn25b4qq4la4xikrdpqlx04xhn-teller-2.0.7"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/r10crkfz1nfn5yq18670jbsbjf09l4fg-kubernetes-helm-3.17.2",
+              "path": "/nix/store/cbhghh4a8r2y4j51f470kh660jwypf0i-teller-2.0.7",
               "default": true
             }
           ],
-          "store_path": "/nix/store/r10crkfz1nfn5yq18670jbsbjf09l4fg-kubernetes-helm-3.17.2"
+          "store_path": "/nix/store/cbhghh4a8r2y4j51f470kh660jwypf0i-teller-2.0.7"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/0lhjm5b1k49rsirsrvsqasbrv1im6w6j-kubernetes-helm-3.17.2",
+              "path": "/nix/store/mzb9i6n7gjb0j8y8fviykfnv0hs9hin3-teller-2.0.7",
               "default": true
             }
           ],
-          "store_path": "/nix/store/0lhjm5b1k49rsirsrvsqasbrv1im6w6j-kubernetes-helm-3.17.2"
+          "store_path": "/nix/store/mzb9i6n7gjb0j8y8fviykfnv0hs9hin3-teller-2.0.7"
         }
       }
     },
