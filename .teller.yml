@@ -1,3 +1,5 @@
+---
+project: dot
 providers:
   google_secrets_manager:
     kind: google_secretmanager
