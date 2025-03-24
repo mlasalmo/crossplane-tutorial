@@ -14,7 +14,7 @@ Feel free to say "No" and inspect the script if you prefer setting up resources 
 
 echo "
 ## You will need following tools installed:
-|Name            |Required             |More info                                          |
+
 |Name                                       |Required                |More info                                                                      |
 |-------------------------------------------|------------------------|-------------------------------------------------------------------------------|
 |AWS CLI                                    |If using AWS            |'https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html'|
