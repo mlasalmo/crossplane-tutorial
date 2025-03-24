@@ -1,19 +1,20 @@
 {
-  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.7/.schema/devbox.schema.json",
-  "packages": [
-    "awscli2@2.15.32",
-    "crossplane-cli@1.15.1",
-    "gh@2.46.0",
-    "gum@0.13.0",
-    "jq@1.7.1",
-    "k3d@5.6.0",
-    "kind@0.22.0",
-    "kubectl@1.29.2",
-    "kubernetes-helm@3.14.3",
-    "teller@1.5.6",
-    "upbound@0.24.2",
-    "yq-go@4.43.1"
-  ],
+  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.14.0/.schema/devbox.schema.json",
+  "packages": {
+    "awscli2": "2.15.32",
+    "crossplane-cli": "1.15.1",
+    "gh": "2.46.0",
+    "go-task": "3.41.0",
+    "gum": "0.13.0",
+    "jq": "1.7.1",
+    "k3d": "5.6.0",
+    "kind": "0.22.0",
+    "kubectl": "1.29.2",
+    "kubernetes-helm": "3.14.3",
+    "teller": "1.5.6",
+    "upbound": "0.24.2",
+    "yq-go": "4.43.1"
+  },
   "shell": {
     "init_hook": [
       "test -f .env && source .env"
