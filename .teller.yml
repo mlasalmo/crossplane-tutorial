@@ -1,3 +1,4 @@
+---
 project: dot
 providers:
   google_secretmanager:
